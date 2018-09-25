@@ -7,6 +7,7 @@ from AccessControl import ClassSecurityInfo
 from AccessControl.Permissions import manage_users as ManageUsers
 from App.class_init import InitializeClass
 from App.special_dtml import DTMLFile
+from Products.CMFCore.utils import getToolByName
 from Products.PlonePAS.interfaces.capabilities import IDeleteCapability
 from Products.PlonePAS.interfaces.capabilities import IPasswordSetCapability
 from Products.PlonePAS.interfaces.plugins import IUserIntrospection
@@ -86,14 +87,24 @@ class UserManager(BasePlugin):
             raise RuntimeError("User does not exist: %s" % principal_id)
         self._user_passwords[principal_id] = AuthEncoding.pw_encrypt(password)
 
+    #add by adam
+    # todo self cache function based userid and rolename
+    def isRole(self,rolename):
+        """True iff current login user has rolename role"""
+        mtool = getToolByName(self, 'portal_membership')
+        current = mtool.getAuthenticatedMember()
+        curroles = current.getRoles()
+        return bool(rolename in curroles)        
     # implement interfaces IDeleteCapability, IPasswordSetCapability
-
+    
     @security.public
     def allowDeletePrincipal(self, principal_id):
         """True iff this plugin can delete a certain user/group.
         This is true if this plugin manages the user.
         """
-        if self._user_passwords.get(principal_id) is not None:
+        #add by adam
+        
+        if self._user_passwords.get(principal_id) is not None and self.isRole('Secstaff'):
             return 1
         return 0
 
