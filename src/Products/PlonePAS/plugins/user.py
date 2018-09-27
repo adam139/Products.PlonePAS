@@ -94,6 +94,8 @@ class UserManager(BasePlugin):
         mtool = getToolByName(self, 'portal_membership')
         current = mtool.getAuthenticatedMember()
         curroles = current.getRoles()
+#         import pdb
+#         pdb.set_trace()
         return bool(rolename in curroles)        
     # implement interfaces IDeleteCapability, IPasswordSetCapability
     
@@ -104,7 +106,7 @@ class UserManager(BasePlugin):
         """
         #add by adam
         
-        if self._user_passwords.get(principal_id) is not None and self.isRole('Secstaff'):
+        if self._user_passwords.get(principal_id) is not None and self.isRole('SecStaff'):
             return 1
         return 0
 
