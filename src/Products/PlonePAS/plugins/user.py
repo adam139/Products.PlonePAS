@@ -106,7 +106,8 @@ class UserManager(BasePlugin):
         """
         #add by adam
         
-        if self._user_passwords.get(principal_id) is not None and self.isRole('SecStaff'):
+#         if self._user_passwords.get(principal_id) is not None and self.isRole('SecStaff'):
+        if self._user_passwords.get(principal_id) is not None:
             return 1
         return 0
 

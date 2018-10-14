@@ -115,13 +115,15 @@ def _doAddUser(self, login, password, roles, domains, groups=None, **kw):
         if bool(descrip):descrip=u",并分配了(%s)组(%s)" % (dsn,descrip)
         else:
             descrip=u",并分配了(%s)组" % dsn
-    notify(CreateMemberEvent(adminid = current.getId(),
+    crtEvent = CreateMemberEvent(adminid = current.getId(),
                                      userid = login,
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
                                      description = descrip,
-                                     result = 1))        
+                                     result = 1)
+    if crtEvent.available():
+        notify(crtEvent)        
     return retval
 
 
@@ -154,13 +156,15 @@ def _doDelUser(self, id):
             pass
         else:
             notify(PrincipalDeleted(id))
-            notify(DeleteMemberEvent(adminid = current.getId(),
+            delEvent = DeleteMemberEvent(adminid = current.getId(),
                                      userid = user.getId(),
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
                                      description = "delete user",
-                                     result = 1))
+                                     result = 1)
+            if delEvent.available():
+                notify(delEvent)
 
 
 def _doChangeUser(self, principal_id, password, roles, domains=(), groups=None,
@@ -181,13 +185,15 @@ def _doChangeUser(self, principal_id, password, roles, domains=(), groups=None,
         except:
             pass
         else:
-            notify(ChangeMemberEvent(adminid = current.getId(),
+            chgEvent = ChangeMemberEvent(adminid = current.getId(),
                                      userid = principal_id,
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
                                      description = u"更新密码",
-                                     result = 1))            
+                                     result = 1)
+            if chgEvent.available():
+                notify(chgEvent)            
 
     plugins = self._getOb('plugins')
 
@@ -201,13 +207,15 @@ def _doChangeUser(self, principal_id, password, roles, domains=(), groups=None,
         dsn = list2str(roles)
         for rid, rmanager in rmanagers:
             rmanager.assignRolesToPrincipal(roles, principal_id)
-            notify(ChangeMemberEvent(adminid = current.getId(),
+            chgEvent = ChangeMemberEvent(adminid = current.getId(),
                                      userid = principal_id,
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
                                      description = u"并更新了角色%s" % dsn,
-                                     result = 1))
+                                     result = 1)
+            if chgEvent.available():
+                notify(chgEvent)
 
     if groups is not None:
         _userSetGroups(self, principal_id, groups)
