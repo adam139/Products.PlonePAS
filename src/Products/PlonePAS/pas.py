@@ -37,7 +37,7 @@ import logging
 from emc.policy.events import CreateMemberEvent
 from emc.policy.events import ChangeMemberEvent
 from emc.policy.events import DeleteMemberEvent
-from emc.policy import get_ip,fmt,list2str
+from emc.policy import get_ip,fmt,list2str,getfullname_orid
 import datetime
 logger = logging.getLogger('PlonePAS')
 
@@ -101,7 +101,8 @@ def _doAddUser(self, login, password, roles, domains, groups=None, **kw):
     """Masking of PAS._doAddUser to add groups param."""
     _old_doAddUser = getattr(self, getattr(_doAddUser, ORIG_NAME))
     mtool = getToolByName(self, 'portal_membership')
-    current = mtool.getAuthenticatedMember()   
+    current = mtool.getAuthenticatedMember()
+#     guest = mtool.getMemberById(login)   
     retval = _old_doAddUser(login, password, roles, domains)
     descrip = ""
     if bool(retval):
@@ -115,7 +116,8 @@ def _doAddUser(self, login, password, roles, domains, groups=None, **kw):
         if bool(descrip):descrip=u",并分配了(%s)组(%s)" % (dsn,descrip)
         else:
             descrip=u",并分配了(%s)组" % dsn
-    crtEvent = CreateMemberEvent(adminid = current.getId(),
+    crtEvent = CreateMemberEvent(adminid = getfullname_orid(current),
+#                                      userid = guest.getProperty('fullname',login),
                                      userid = login,
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
@@ -156,8 +158,8 @@ def _doDelUser(self, id):
             pass
         else:
             notify(PrincipalDeleted(id))
-            delEvent = DeleteMemberEvent(adminid = current.getId(),
-                                     userid = user.getId(),
+            delEvent = DeleteMemberEvent(adminid = getfullname_orid(current),
+                                     userid = user.getProperty('fullname',user.getId()),
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
@@ -178,15 +180,16 @@ def _doChangeUser(self, principal_id, password, roles, domains=(), groups=None,
     # Might be called with 'None' as password from the Plone UI, in
     # prefs_users_overview when resetPassword is not set.
     mtool = getToolByName(self, 'portal_membership')
-    current = mtool.getAuthenticatedMember()    
+    current = mtool.getAuthenticatedMember()
+    guest =   mtool.getMemberById(principal_id)  
     if password is not None:
         try:
             self.userSetPassword(principal_id, password)
         except:
             pass
         else:
-            chgEvent = ChangeMemberEvent(adminid = current.getId(),
-                                     userid = principal_id,
+            chgEvent = ChangeMemberEvent(adminid = getfullname_orid(current),
+                                     userid = getfullname_orid(guest),
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
@@ -207,8 +210,8 @@ def _doChangeUser(self, principal_id, password, roles, domains=(), groups=None,
         dsn = list2str(roles)
         for rid, rmanager in rmanagers:
             rmanager.assignRolesToPrincipal(roles, principal_id)
-            chgEvent = ChangeMemberEvent(adminid = current.getId(),
-                                     userid = principal_id,
+            chgEvent = ChangeMemberEvent(adminid = getfullname_orid(current),
+                                     userid = getfullname_orid(guest),
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
@@ -220,8 +223,8 @@ def _doChangeUser(self, principal_id, password, roles, domains=(), groups=None,
     if groups is not None:
         _userSetGroups(self, principal_id, groups)
         dsn = list2str(groups)
-        notify(ChangeMemberEvent(adminid = current.getId(),
-                                     userid = principal_id,
+        notify(ChangeMemberEvent(adminid = current.getProperty('fullname',current.getId()),
+                                     userid = getfullname_orid(guest),
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
                                      type = 0,
