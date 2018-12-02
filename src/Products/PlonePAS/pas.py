@@ -100,10 +100,11 @@ def _userSetGroups(pas, user_id, groupnames):
 def _doAddUser(self, login, password, roles, domains, groups=None, **kw):
     """Masking of PAS._doAddUser to add groups param."""
     _old_doAddUser = getattr(self, getattr(_doAddUser, ORIG_NAME))
+    retval = _old_doAddUser(login, password, roles, domains)
     mtool = getToolByName(self, 'portal_membership')
     current = mtool.getAuthenticatedMember()
-#     guest = mtool.getMemberById(login)   
-    retval = _old_doAddUser(login, password, roles, domains)
+    ucurrent =  getfullname_orid(current)
+    if not bool(ucurrent): return retval    
     descrip = ""
     if bool(retval):
         if len(roles)!=0:
@@ -116,8 +117,7 @@ def _doAddUser(self, login, password, roles, domains, groups=None, **kw):
         if bool(descrip):descrip=u",并分配了(%s)组(%s)" % (dsn,descrip)
         else:
             descrip=u",并分配了(%s)组" % dsn
-    crtEvent = CreateMemberEvent(adminid = getfullname_orid(current),
-#                                      userid = guest.getProperty('fullname',login),
+    crtEvent = CreateMemberEvent(adminid = ucurrent,
                                      userid = login,
                                      datetime = datetime.datetime.now().strftime(fmt),
                                      ip = get_ip(),
