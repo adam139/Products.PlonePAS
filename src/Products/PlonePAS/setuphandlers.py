@@ -165,7 +165,7 @@ def setupPlugins(portal):
             "AuthenticatedUsers", "Automatic Group Provider")
         logger.debug("Added Automatic Group.")
         activatePluginInterfaces(portal, "auto_group")
-
+# replace of emc.auth
     found = uf.objectIds(['Plone Session Plugin'])
     if not found:
         manage_addSessionPlugin(plone_pas, 'session')

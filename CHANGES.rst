@@ -2,15 +2,17 @@ Changelog
 =========
 
 6.0.0 (unreleased)
+5.1.0 (2018-05-01)
 ------------------
 
-Breaking changes:
+New features:
 
 - Adapt to changes of MemberData in CMFCore.
   Fixes https://github.com/plone/Products.PlonePAS/issues/24
   [pbauer]
+- Notify PropertiesUpdated event when member properties are changed
+  [ezvirtual]
 
-New features:
 
 - Make it work in Python 3:
   Make imports work. 
@@ -34,6 +36,11 @@ Bug fixes:
 
 - Removed ``Extensions/Install.py`` which had only backwards compatibility imports.
   [maurits]
+
+5.0.15 (2017-12-11)
+-------------------
+
+Bug fixes:
 
 - Report home_page as empty when it is suspicious.
   It may for example contain javascript.

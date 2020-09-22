@@ -390,7 +390,7 @@ class MembershipTool(BaseTool):
 
         # Special handling to avoid bad home_pages, like javascript.
         home_page = member.getProperty('home_page', '')
-        if isinstance(home_page, six.string_types):
+        if isinstance(home_page, basestring):
             if (not home_page.startswith('https://') and
                     not home_page.startswith('http://')):
                 # Suspicious.  But if it is internal, it is fine.
